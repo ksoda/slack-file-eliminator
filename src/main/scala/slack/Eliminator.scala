@@ -6,15 +6,17 @@ import slack.models.{SlackFile, User}
 import com.github.nscala_time.time.Imports._
 
 object Eliminator extends App {
-  val token: String = args(0)
-  val userName: Option[String] = if (args.size > 1) Some(args(1)) else None
-  Client.run(token, userName)
+  Client.run(
+    args(0),
+    if (args.size > 1) Some(args(1)) else None,
+    12
+  )
 }
 
 object Client extends TimeUtil {
-  def run(token: String, userName: Option[String]): Unit = {
+  def run(token: String, userName: Option[String], months: Int): Unit = {
     val c = new Client(token)
-    val files = c.files(c.findUser(userName), tsTo)
+    val files = c.files(c.findUser(userName), monthsAgo(months))
     println(files.map(_.name).mkString("\n"))
     println(c.deleteFiles(files))
     println("Done\n")
@@ -44,6 +46,5 @@ class Client(token: String) {
 }
 
 trait TimeUtil {
-  val m = 0
-  val tsTo: Long = ((DateTime.now - m.months).getMillis()) / 1000
+  def monthsAgo(m: Int): Long = ((DateTime.now - m.months).getMillis()) / 1000
 }
