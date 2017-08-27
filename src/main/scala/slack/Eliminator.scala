@@ -16,7 +16,9 @@ object Eliminator extends App {
 object Client extends TimeUtil {
   def run(token: String, userName: Option[String], months: Int): Unit = {
     val c = new Client(token)
-    val files = c.files(c.findUser(userName), monthsAgo(months))
+    val user = c.findUser(userName)
+    println(user.map(_.name).getOrElse("NA"))
+    val files = c.files(user, monthsAgo(months))
     println(files.map(_.name).mkString("\n"))
     println(c.deleteFiles(files))
     println("Done\n")
@@ -28,13 +30,9 @@ class Client(token: String) {
   implicit val system = ActorSystem("slack")
   val client = BlockingSlackApiClient(token)
   def finish() = system.terminate()
-  def findUser(userName: Option[String]): Option[User] = {
-    val r = userName.flatMap(n =>
-      client.listUsers().find(_.name == n)
-    )
-    println(r.map(_.name).getOrElse("NA"))
-    r
-  }
+  def findUser(userName: Option[String]): Option[User] =
+    userName.flatMap(n => client.listUsers().find(_.name == n))
+
   def files(user: Option[User], tsTo: Long): Seq[SlackFile] = user match {
     case Some(_) => client.listFiles(user.map(_.id), None, Some(tsTo.toString)).files
     case None => Seq[SlackFile]()
