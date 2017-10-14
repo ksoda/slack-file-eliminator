@@ -7,4 +7,4 @@ $ sbt "run file legacy-tokens slack_name"
 
 Message
 ---
-$ sbt "run message legacy-tokens channel_name"
+$ sbt "run message legacy-tokens channel_name slack_name"
